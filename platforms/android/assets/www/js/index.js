@@ -1,6 +1,20 @@
 var ccHqLat = 6.504361303523183;
 var ccHqLon = 3.377968752756715;
 var maximumRadius = 0.2;
+var userId = '';
+
+var mglConfig = {
+        apiKey: 'y9UooIRpAGUiYJ_bARXWW0BcZ7vqvzVO',
+        database: 'ccloc',
+        visitsCollection: 'visits',
+        collectionUrl: '',
+        baseUrl: 'https://api.mongolab.com/api/1/databases/'
+};
+
+
+
+
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -18,7 +32,13 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicity call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-         getGpsLocation();
+         
+           mglConfig.collectionUrl = mglConfig.baseUrl + mglConfig.database + '/collections/' + mglConfig.visitsCollection + '?apiKey=' + mglConfig.apiKey;
+           
+           
+           initializeDatabase();
+            checkUserRegistration();
+                
         app.receivedEvent('deviceready');
     },
     // Update DOM on a Received Event
@@ -128,14 +148,26 @@ var onSuccess = function(position) {
   
   userLat = position.coords.latitude;
   userLon = position.coords.longitude;
-  device.exitApp();
-
+  
   if(isWithinTheHubRange(userLat,userLon)){//send to server
           
-          
-          
+                position.coords.timestamp = new Date().getTime();
+                
+                $.ajax({
+                        url: mglConfig.collectionUrl,
+                        data: JSON.stringify(position),
+                        type: "POST",
+                        contentType: "application/json",
+                        success: function(data) {
+                                console.log(data);
+                                alert(JSON.stringify(data));
+                                
+                        },
+                }
+                );          
   }else{
           //terminate
+          console.log("THis user is not within the range");
   }
   
 };
@@ -167,3 +199,70 @@ function isWithinTheHubRange(userLat,userLon){
 }
 
 
+
+
+function initializeDatabase(){
+        
+        var db = window.openDatabase("ccloc", "1.0", "cCloc Database", 200000);
+        db.transaction(populateDB, errorCB, successCB);
+}
+
+// Populate the database
+    //
+    function populateDB(tx) {
+        tx.executeSql('CREATE TABLE IF NOT EXISTS login (id unique,userid,name,email)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS checkins (id unique,ctime,clat,clon,caccuracy)');
+        checkUserRegistration(tx);
+    }
+
+
+function checkUserRegistration(tx){
+        
+        tx.executeSql('SELECT * FROM login LIMIT 1', [], userIsRegistered, errorCB);
+ 
+        
+       
+}
+function userIsRegistered(tx, results) {
+    console.log("Returned rows = " + results.rows.length);
+    // this will be true since it was a select statement and so rowsAffected was 0
+    if (results.rows.length==0) {
+        console.log('User is NOT registered. Redirect to registration form');
+        alert("Please register to continue");
+        $('#registrationArea').show();
+        return false;
+    }else{
+            
+            
+            console.log("User is registered. Get GPS location");
+            
+            for (var i=0; i<results.rows.length; i++){
+                console.log("Row = " + i + " ID = " + results.rows.item(i).userid);
+            }
+            getGpsLocation();
+            
+    }
+    
+}
+function querySuccess(tx, results) {
+    console.log("Returned rows = " + results.rows.length);
+    // this will be true since it was a select statement and so rowsAffected was 0
+    if (!results.rowsAffected) {
+        console.log('No rows affected!');
+        return false;
+    }
+    // for an insert statement, this property will return the ID of the last inserted row
+    console.log("Last inserted row ID = " + results.insertId);
+}
+
+    // Transaction error callback
+    //
+    function errorCB(tx, err) {
+        alert("Error processing SQL: "+err);
+    }
+
+    // Transaction success callback
+    //
+    function successCB() {
+        console.log("success!");
+    }
