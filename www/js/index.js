@@ -1,6 +1,7 @@
 var ccHqLat = 6.504361303523183;
 var ccHqLon = 3.377968752756715;
-var maximumRadius = 0.2;
+//var maximumRadius = 0.2; //in Kilometres
+var maximumRadius = 2;
 var userId = '';
 var db;
 var mglConfig = {
@@ -12,9 +13,6 @@ var mglConfig = {
         loginsUrl: '',
         baseUrl: 'https://api.mongolab.com/api/1/databases/'
 };
-
-
-
 
 
 var app = {
@@ -135,7 +133,7 @@ if (typeof String.prototype.trim == 'undefined') {
 function getGpsLocation() {
 
         var geoOptions = {
-                maximumAge: 2000,
+                maximumAge: 15000,
                 enableHighAccuracy: true,
         }
 
@@ -162,14 +160,20 @@ var onSuccess = function(position) {
                 position.coords.userid = userId;
                 $('#deviceready').append('<br />Sending to Server');
                 $.ajax({
-                        cache: false,
                         url: mglConfig.collectionUrl,
                         data: JSON.stringify(position),
                         type: "POST",
                         contentType: "application/json",
+                        cache: false,
+                        type: "POST",
+                        crossDomain : true,
+                        dataType: 'json',
+                        contentType: "application/json",
+                        headers: { "cache-control": "no-cache" },
                         success: function(data) {
                                 console.log(data);
                                 $('#deviceready').append('<br />Sent to Server Successfully');
+                                $('#deviceready').removeClass('blink');
                         },
                 }
                 );
@@ -198,8 +202,11 @@ function onError(error) {
  */
 
 function isWithinTheHubRange(userLat, userLon) {
-
-        if (getDistance(userLat, userLon, ccHqLat, ccHqLon) <= maximumRadius) {
+        distance = getDistance(userLat, userLon, ccHqLat, ccHqLon) ;
+        $('#deviceready').append('<br />Distance to Hub:');
+        $('#deviceready').append(distance);
+         
+        if (distance<= maximumRadius) {
                 return true;
         }
 
@@ -220,7 +227,7 @@ function initializeDatabase() {
 // Populate the database
 //
 function populateDB(tx) {
-        tx.executeSql('DROP TABLE IF  EXISTS login');
+//        tx.executeSql('DROP TABLE IF  EXISTS login');
         tx.executeSql('CREATE TABLE IF NOT EXISTS login (id unique,userid,name,email)');
         tx.executeSql('CREATE TABLE IF NOT EXISTS checkins (id unique,ctime,clat,clon,caccuracy)');
         checkUserRegistration(tx);
@@ -298,12 +305,18 @@ function doRegistration() {
                 $('#loading').show();
                 $('#registrationArea').hide();
                 console.log("Ready to make call");
+                
                 $.ajax({
-                        cache: false,
                         url: mglConfig.loginsUrl,
                         data: JSON.stringify(userDataObj),
                         type: "POST",
                         contentType: "application/json",
+                        cache: false,
+                        type: "POST",
+                        crossDomain : true,
+                        dataType: 'json',
+                        contentType: "application/json",
+                        headers: { "cache-control": "no-cache" },
                         success: function(data) {
                                 console.log(data);
                                 userId = data._id.$oid;

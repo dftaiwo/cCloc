@@ -12,6 +12,7 @@
         <param name="android-package" value="org.apache.cordova.App" />
     </feature>
     <plugin name="Storage" value="org.apache.cordova.Storage" />
+    <access origin="*" />
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
     <preference name="permissions" value="none" />
