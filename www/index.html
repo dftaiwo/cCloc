@@ -28,7 +28,7 @@
     <body>
         <div class="app">
             <h1>cCloc</h1>
-             The Automated Check-in System
+            <h3>The Automated Check-in System</h3>
             <div id="deviceready" class="blink">
                 <p class="event listening">Loading</p>
                 <p class="event received">Device is Ready</p>
@@ -38,25 +38,28 @@
                      Sending... please wait...
              </div>
              <div style="display:none" id="registrationArea">
-                     
-                     <h3>Registration Form</h3>
+                     <form action="#" id="regForm">
+                     Please register below to continue
+                     <h4>Registration Form</h4>
                              <label for="name">
                                      Name
                              </label>
-                             <input type="text" name="name" id="name" placeholder="Enter your full name"  required/>
+                             <input   value="aaa" type="text" name="name" id="name" placeholder="Enter your full name"  required/>
                              <br />
                              <label for="email">
                                      Email
                              </label>
-                             <input type="email" name="email" id="email" placeholder="Enter your email" required/>
+                             <input  value="d@d.com"  type="email" name="email" id="email" placeholder="Enter your email" required/>
                              <br />
                              <label for="phone">
                                      Phone
                              </label>
-                             <input type="number" name="phone" id="phone" placeholder="080XXXXXXXX" />
+                             <input value="080" type="number" name="phone" id="phone" placeholder="080XXXXXXXX" />
                              <br />
-                             <input type="submit"  value="Register" onclick="doRegistration();"/>
-                     
+                             <label>&nbsp;</label>
+                             <input type="submit"  class="btn" value="&nbsp;&nbsp;&nbsp;Register&nbsp;&nbsp;&nbsp;" />
+                             
+             </form>
              </div>
              
         </div>
